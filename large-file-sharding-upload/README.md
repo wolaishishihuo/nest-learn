@@ -26,7 +26,7 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="./ public/img/laregeFile.webp" width="200" alt="Nest Logo" /></a>
+  <a href="http://nestjs.com/" target="blank"><img src="./ public/img/laregeFile.webp" alt="Nest Logo" /></a>
 </p>
 
 ## Installation
