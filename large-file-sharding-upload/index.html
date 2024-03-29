@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- 引入axios库，用于发送HTTP请求 -->
+    <script src="https://unpkg.com/axios@0.24.0/dist/axios.min.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/3.0.2/spark-md5.min.js"
+      integrity="sha512-iWbxiCA4l1WTD0rRctt/BfDEmDC5PiVqFc6c1Rhj/GKjuj6tqrjrikTw3Sypm/eEgMa7jSOS9ydmDlOtxJKlSQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+  </head>
+  <body>
+    <!-- 文件输入框，用于选择文件 -->
+    <input id="fileInput" type="file" />
+    <script>
+      /**
+       * @description: 拿到文件的hash值
+       * @Author: hfunteam
+       * @param {*} file 文件，File类型
+       * @return {
+       *   buffer: 文件的二进制流
+       *   hash: 生成的文件hash值
+       *   suffix：文件后缀名
+       *   filename: 文件名称 hash
+       * }
+       */
+      const changeBuffer = function (file) {
+        return new Promise((resolve) => {
+          let fileReader = new FileReader();
+          fileReader.readAsArrayBuffer(file);
+          fileReader.onload = (ev) => {
+            let buffer = ev.target.result;
+            let spark = new SparkMD5.ArrayBuffer();
+            let suffix;
+            spark.append(buffer);
+            // 拿到文件的hash值
+            let hash = spark.end();
+            // 匹配文件后缀名
+            suffix = /\.([a-zA-Z0-9]+)$/.exec(file.name)[1];
+            resolve({
+              buffer,
+              hash,
+              suffix,
+              filename: `${hash}`,
+            });
+          };
+        });
+      };
+      // 获取文件输入框DOM元素
+      const fileInput = document.querySelector('#fileInput');
+      // 当文件输入框的值改变时触发的事件
+      let mycount = 0;
+      let progressindex = 0;
+      fileInput.onchange = async function () {
+        try {
+          const file = fileInput.files[0];
+          let ln = 0;
+          let files = [];
+          // 当前已经上传的切片
+          let alreadyUploadChunks = [];
+          let { hash, suffix, filename } = await changeBuffer(file);
+          let Ifexits = await axios.post('http://localhost:3000/getDirectory', {
+            hash,
+          });
+          if (Ifexits.data.message == '存在') {
+            // 从后端拿到已经上传的切片列表
+            files = Ifexits.data.files;
+            progressindex = files.length;
+            // ln = files.length
+          }
+          // 实现文件切片处理 「固定数量 或者 固定大小」
+          let max = 1024 * 100, // 切片大小
+            count = Math.ceil(file.size / max), // 切片总数
+            index = 0, // 当前上传的切片索引值
+            chunks = []; // 存放切片的数组
+          mycount = count;
+          if (count == index) {
+            return;
+          }
+          // 存放切片，注意此处的切片名称，hash+index+suffix
+          while (index < count) {
+            chunks.push({
+              file: file.slice(index * max, (index + 1) * max),
+              filename: `${hash}_${index + 1}`,
+            });
+            index++;
+          }
+          // 把每一个切片都上传到服务器上
+          chunks.forEach((chunk) => {
+            // 这里进行断点续传：已经上传的无需在上传
+            if (!files.includes(chunk.filename)) {
+              let formdata = new FormData();
+              formdata.append('file', chunk.file);
+              formdata.append('hash', chunk.filename);
+              formdata.append('myfilename', filename);
+              axios
+                .post('http://localhost:3000/upload', formdata)
+                .then((data) => {
+			
+                  // 管控进度条
+                  progressindex++;
+                  manageProgress(progressindex, count, hash, suffix);
+                })
+                .catch(() => {
+                  // alert("当前切片上传失败，请您稍后再试");
+                });
+            }
+          });
+        } catch (error) {
+          console.error('An error occurred:', error);
+        }
+      };
+      const manageProgress = async function (index, count, hash, suffix) {
+        console.log(index, "---", count)
+        // 管控进度
+        // document.getElementById('progress').style.width = `${
+        //   (index / count) * 100
+        // }%`;
+        // 当所有切片都上传成功，我们合并切片
+        if (index < count) return;
+        // document.getElementById('progress').style.width = `100%`;
+        try {
+          let data = await axios.post(
+            'http://localhost:3000/merge',
+            {
+              hash,
+              count,
+              suffix,
+            },
+            {
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+              },
+            },
+          );
+          if (data.code === 0) {
+            alert(`恭喜您，文件上传成功`);
+            return;
+          }
+          throw data.codeText;
+        } catch (err) {
+          // alert("切片合并失败，请您稍后再试");
+        }
+      };
+    </script>
+  </body>
+</html>
