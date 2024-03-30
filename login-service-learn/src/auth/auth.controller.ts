@@ -8,6 +8,6 @@ export class AuthController {
 
   @Post('regester')
   regester(@Body() regesterDto: RegesterDto) {
-    return this.authService.register(RegesterDto);
+    return this.authService.register(regesterDto);
   }
 }

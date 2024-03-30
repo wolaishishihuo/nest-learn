@@ -4,6 +4,6 @@ import { RegesterDto } from './dto/regester.dto';
 @Injectable()
 export class AuthService {
   register(regesterDto: RegesterDto) {
-    return 'register';
+    return regesterDto;
   }
 }
