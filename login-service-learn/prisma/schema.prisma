@@ -14,7 +14,7 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement()) @db.UnsignedInt 
-  name      String
- password   String
+  id       Int    @id @default(autoincrement()) @db.UnsignedInt
+  username String
+  password String
 }
