@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <!-- 引入axios库，用于发送HTTP请求 -->
     <script src="https://unpkg.com/axios@0.24.0/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/qs@6.10.2/dist/qs.js"></script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/3.0.2/spark-md5.min.js"
       integrity="sha512-iWbxiCA4l1WTD0rRctt/BfDEmDC5PiVqFc6c1Rhj/GKjuj6tqrjrikTw3Sypm/eEgMa7jSOS9ydmDlOtxJKlSQ=="
@@ -98,7 +99,6 @@
               axios
                 .post('http://localhost:3000/upload', formdata)
                 .then((data) => {
-			
                   // 管控进度条
                   progressindex++;
                   manageProgress(progressindex, count, hash, suffix);
@@ -113,22 +113,24 @@
         }
       };
       const manageProgress = async function (index, count, hash, suffix) {
-        console.log(index, "---", count)
+        console.log(index, count, hash, suffix);
         // 管控进度
         // document.getElementById('progress').style.width = `${
         //   (index / count) * 100
         // }%`;
         // 当所有切片都上传成功，我们合并切片
         if (index < count) return;
+
         // document.getElementById('progress').style.width = `100%`;
+
         try {
           let data = await axios.post(
             'http://localhost:3000/merge',
-            {
+            Qs.stringify({
               hash,
               count,
               suffix,
-            },
+            }),
             {
               headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
