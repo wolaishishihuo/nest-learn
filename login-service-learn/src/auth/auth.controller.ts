@@ -1,9 +1,9 @@
-import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegesterDto } from './dto/regester.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from '@nestjs/passport';
-
+import { Request } from 'express';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -15,9 +15,9 @@ export class AuthController {
   login(@Body() loginDio: LoginDto) {
     return this.authService.login(loginDio);
   }
-  @Get('getAll')
+  @Get('getUserInfo')
   @UseGuards(AuthGuard('jwt'))
-  getAll() {
-    return this.authService.getAll();
+  getAll(@Req() req: Request) {
+    return req.user;
   }
 }

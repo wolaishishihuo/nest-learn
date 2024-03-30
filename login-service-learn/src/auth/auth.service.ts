@@ -39,7 +39,4 @@ export class AuthService {
     }
     return this.jwtSign(user);
   }
-  async getAll() {
-    return this.prismaServce.user.findMany();
-  }
 }
