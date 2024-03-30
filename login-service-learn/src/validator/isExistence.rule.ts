@@ -23,8 +23,6 @@ export function IsExistence(
           if (!value) {
             throw new BadRequestException('用户名不能为空');
           }
-          console.log(propertyName, args.value);
-
           const prisma = new PrismaClient();
           return prisma[table]
             .findFirst({
