@@ -1,9 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadGatewayException, Inject, Injectable } from '@nestjs/common';
 import { RegesterDto } from './dto/regester.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { hash } from 'argon2';
+import { hash, verify } from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
+import { LoginDto } from './dto/login.dto';
 @Injectable()
 export class AuthService {
   constructor(private readonly prismaServce: PrismaService) {}
@@ -25,5 +26,17 @@ export class AuthService {
     return {
       token,
     };
+  }
+  async login(loginDto: LoginDto) {
+    const user = await this.prismaServce.user.findFirst({
+      where: {
+        username: loginDto.username,
+      },
+    });
+    const isMatch = await verify(user.password, loginDto.password);
+    if (!isMatch) {
+      throw new BadGatewayException('密码错误');
+    }
+    return this.jwtSign(user);
   }
 }
