@@ -13,7 +13,7 @@ export function IsExistence(
 ) {
   return function (object: Record<string, any>, propertyName: string) {
     registerDecorator({
-      name: 'isLongerThan',
+      name: 'IsExistence',
       target: object.constructor,
       propertyName: propertyName,
       constraints: [table],

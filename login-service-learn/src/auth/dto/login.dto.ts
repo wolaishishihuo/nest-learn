@@ -1,8 +1,7 @@
 import { IsNotEmpty } from 'class-validator';
-import { IsExistence } from 'src/validator/isExistence.rule';
 
 export class LoginDto {
-  @IsExistence('user')
+  @IsNotEmpty()
   username: string;
   @IsNotEmpty()
   password: string;

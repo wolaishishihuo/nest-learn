@@ -1,5 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
-export class RegesterDto {
+
+export class RegisterDto {
   @IsNotEmpty()
   username: string;
   @IsNotEmpty()
