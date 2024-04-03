@@ -1,10 +1,10 @@
 import permission from './modules/permission';
+import role from './modules/role';
 import user from './modules/user';
-import userPermission from './modules/userPermission';
 
 async function main() {
-  await user();
+  await role();
   await permission();
-  await userPermission();
+  await user();
 }
 main();

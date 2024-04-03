@@ -14,25 +14,42 @@ datasource db {
 }
 
 model User {
-  id       Int    @id @default(autoincrement()) @db.UnsignedInt
-  username String
-  password String
-  permissions User_Permission[]
+  id        Int        @id @default(autoincrement())
+  username  String
+  password  String
+  userRoles UserRole[] // 这是新的中间表
+}
+
+model Role {
+  id              Int              @id @default(autoincrement()) 
+  name            String
+  userRoles       UserRole[] // 这是新的中间表
+  rolePermissions RolePermission[] // 这是新的中间表
 }
 
 model Permission {
-  id        Int    @id @default(autoincrement()) @db.UnsignedInt
-  name      String
-  desc      String 
-  users     User_Permission[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              Int              @id @default(autoincrement())
+  name            String
+  desc     String
+  rolePermissions RolePermission[] // 这是新的中间表
 }
 
-model User_Permission {
-  user User @relation(fields: [userId], references: [id])
-  userId    Int @db.UnsignedInt
-  permission Permission @relation(fields: [permissionId], references: [id])
-  permissionId Int @db.UnsignedInt
-  @@id([userId, permissionId])
+// 用户与角色的中间表
+model UserRole {
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+  role   Role @relation(fields: [roleId], references: [id])
+  roleId Int
+
+  @@id([userId, roleId]) // 设定复合主键
+}
+
+// 角色与权限的中间表
+model RolePermission {
+  role         Role       @relation(fields: [roleId], references: [id])
+  roleId       Int
+  permission   Permission @relation(fields: [permissionId], references: [id])
+  permissionId Int
+
+  @@id([roleId, permissionId]) // 设定复合主键
 }

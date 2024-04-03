@@ -7,6 +7,17 @@ export default async () => {
       data: {
         username: Random.string('lower', 5),
         password: '1111',
+        userRoles: {
+          create: [
+            {
+              role: {
+                connect: {
+                  id: Random.integer(1, 2),
+                },
+              },
+            },
+          ],
+        },
       },
     });
   });
